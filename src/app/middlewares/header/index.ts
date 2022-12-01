@@ -1,7 +1,6 @@
 import express, { Express } from 'express';
-
 import cors from 'cors';
-import routes from '../../routes';
+import indexRoute from '../../routes';
 
 export default function appMiddleware(app: Express): void {
     app.use(cors());
@@ -13,5 +12,5 @@ export default function appMiddleware(app: Express): void {
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
         next();
     });
-    app.use(routes);
+    app.use(indexRoute);
 }
