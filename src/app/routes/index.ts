@@ -1,7 +1,17 @@
-import { Router } from 'express';
+// import { Router } from 'express';
 
-const routes = Router();
+// const router = Router();
+// const AuthController = require('../controllers/auth.controller');
 
-routes.get("/", (req, res) => res.send("CRONOS SOFTWARE! 0.0.1"))
+// router.get("/api/auth/verifyEmail", AuthController.verifyEmail);
+// router.get("/api/auth/signup", AuthController.signup);
 
-export default routes;
+// export default router;
+import express from 'express';
+
+const indexRoute = express();
+const authRoutes = require('./auth');
+
+indexRoute.use("/api/auth", authRoutes);
+
+export default indexRoute;
