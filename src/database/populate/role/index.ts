@@ -11,7 +11,6 @@ export default function initialRoles() {
                 if (err) {
                     console.log("error when trying to add role 'authenticated'", err);
                 }
-
                 console.log("addes 'authenticated' to roles collection");
             });
             new Role({
@@ -20,7 +19,6 @@ export default function initialRoles() {
                 if (err) {
                     console.log("error when trying to add role 'admin'", err);
                 }
-
                 console.log("addes 'admin' to roles collection");
             });
         }
