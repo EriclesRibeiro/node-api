@@ -8,6 +8,14 @@ const UserModel = model("Users",
         updated_at: String,
         password: String,
         email: String,
+        sexo: String,
+        notifications: Array,
+        groups: [
+            {
+                type: Types.ObjectId,
+                ref: "Groups"
+            }
+        ],
         roles: [
             {
                 type: Types.ObjectId,

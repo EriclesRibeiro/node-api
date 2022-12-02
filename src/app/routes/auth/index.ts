@@ -1,10 +1,10 @@
-import { Router, Express } from 'express';
-import express from 'express'
+import { Router } from 'express';
 
 const router = Router();
 const AuthController = require('../../controllers/auth.controller');
+const verifiers = require('../../middlewares/verifiers');
 
 router.get("/verifyEmail", AuthController.verifyEmail);
-router.post("/signup", AuthController.signup);
+router.post("/signup", [ verifiers.verifyEmail ], AuthController.signup);
 
 module.exports = router
