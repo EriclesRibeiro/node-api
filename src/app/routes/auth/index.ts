@@ -1,11 +1,14 @@
 import { Router } from 'express';
+import { AuthenticateController } from '../../controllers/AuthenticateController';
+import { ensureAuthenticated } from '../../middlewares/ensureAuthenticated';
+import { Verifier } from '../../middlewares/verifiers';
 
 const router = Router();
-const AuthController = require('../../controllers/auth.controller');
-const verifiers = require('../../middlewares/verifiers');
+const authenticateController = new AuthenticateController();
+const verifier = new Verifier();
 
-router.get("/verifyEmail", AuthController.verifyEmail);
-router.post("/signup", [ verifiers.verifyEmail ], AuthController.signup);
-router.post("/signin", AuthController.signin);
+router.post("/signup", verifier.verifyEmail, authenticateController.signUp);
+router.get("/verifyEmail", authenticateController.verifyEmail);
+router.post("/signin", authenticateController.signIn);
 
-module.exports = router
+module.exports = router;
