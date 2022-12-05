@@ -1,7 +1,7 @@
-import 'express-async-errors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import indexRoute from '../../routes';
+import errorHandler from '../errorHandler';
 
 export default function appMiddleware(app: Express): void {
     app.use(cors());
@@ -15,12 +15,6 @@ export default function appMiddleware(app: Express): void {
     });
     app.use(indexRoute);
 
-    app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-        return res.status(400).json({
-            error: {
-                message: error.message
-            },
-            body: null
-        });
-    })
+    // Padronização de erros
+    app.use(errorHandler);
 }
