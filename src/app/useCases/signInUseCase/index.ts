@@ -46,7 +46,7 @@ class SignInUseCase {
             }
 
         } catch (error) {
-            throw new Error("Erro ao tentar realizar o cadastro! Por favor, tente novamente mais tarde!");
+            throw new Error("Erro ao tentar realizar login! Por favor, tente novamente mais tarde!");
         }
     }
 }

@@ -1,29 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import db from "../../../database/models";
+import { AppError } from "../../../utils/error";
+import Constant from "../../../utils/constants";
 
 const User = db.user;
 
 class Verifier {
    verifyEmail(req: Request, res: Response, next: NextFunction) {
       const { email } = req.body;
-      if(!email) {
-         return res.status(422).json({
-             error: {
-                 message: "É necessário informar o email para verificação!"
-             },
-             body: null
-         });
-      }
+
+      let errorMessage;
+      if (!email) {errorMessage = "É necessário informar o email!"};
+
+      if (errorMessage) {throw new AppError(errorMessage, Constant.BAD_REQUEST)};
+
       User.findOne({
          email: email
       }).exec((err, user) => {
          if (err) {
-            return res.status(500).json({
-               error: {
-                  message: err
-               },
-               body: null
-           })
+            throw new AppError("Algo deu errado! Por favor, tente novamente mais tarde!!", Constant.BAD_REQUEST);
          }
          if (user) {
             return res.status(500).json({
@@ -31,7 +26,7 @@ class Verifier {
                   message: "Já existe um usuário cadastrado com esse email!"
                },
                body: null
-           })
+            })
          }
          next();
       });

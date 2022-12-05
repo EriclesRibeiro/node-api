@@ -1,29 +1,19 @@
 import db from "../../../database/models";
 import dateFormated from "../../../utils/dateFormated";
 import { hashSync } from 'bcrypt'
+import Constant from '../../../utils/constants';
+import { AppError } from "../../../utils/error";
 
 interface IUserRequest {
-    name: String;
-    password: String;
-    email: String;
-    sexo: String;
+    name: string;
+    password: string;
+    email: string;
+    sexo: string;
 }
 
 class SignUpUseCase {
     async execute({ name, password, email, sexo }: IUserRequest) {
-        //Validação dos dados da requisição
-        if (!email) {
-            throw new Error("É necessário informar o email!");
-        }
-        if (!name) {
-            throw new Error("É necessário informar o nome!");
-        }
-        if (!password) {
-            throw new Error("É necessário informar a senha!");
-        }
-        if (!sexo) {
-            throw new Error("É necessário informar o sexo!");
-        }
+        
         const currentDate = dateFormated(new Date());
         const User = db.user;
         const Role = db.role;
@@ -39,22 +29,22 @@ class SignUpUseCase {
             roles: []
         }).save((err, user) => {
             if (err) {
-                return false
+                throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
             }
             Role.find({
                 name: { $in: 'authenticated' }
             }, (err: any, roles: any) => {
                 if (err) {
-                    return false
+                    throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
                 }
                 user.roles = roles.map((role: any) => role._id)
                 user.save((err, response) => {
                     if (err) {
-                        return false;
+                        throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
                     }
-                })
-            })
-        })
+                });
+            });
+        });
         return true;
     }
 }
