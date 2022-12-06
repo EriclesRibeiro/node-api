@@ -1,7 +1,7 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import indexRoute from '../../routes';
-import errorHandler from '../errorHandler';
+import { errorHandler } from '../errorHandler';
 
 export default function appMiddleware(app: Express): void {
     app.use(cors());
@@ -16,5 +16,5 @@ export default function appMiddleware(app: Express): void {
     app.use(indexRoute);
 
     // Padronização de erros
-    app.use(errorHandler);
+    app.use( errorHandler );
 }

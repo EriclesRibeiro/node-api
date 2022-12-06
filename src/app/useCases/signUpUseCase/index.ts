@@ -29,18 +29,18 @@ class SignUpUseCase {
             roles: []
         }).save((err, user) => {
             if (err) {
-                throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
+                throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
             }
             Role.find({
                 name: { $in: 'authenticated' }
             }, (err: any, roles: any) => {
                 if (err) {
-                    throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
+                    throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
                 }
                 user.roles = roles.map((role: any) => role._id)
                 user.save((err, response) => {
                     if (err) {
-                        throw new AppError("Ocorreu um erro ao cadastrar!", Constant.BAD_REQUEST);
+                        throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
                     }
                 });
             });

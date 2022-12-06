@@ -1,6 +1,7 @@
 const BAD_REQUEST = 400;
 const CREATED = 201;
 const SUCCESS = 200;
+const GENERIC_ERROR = 500;
 
-export default { BAD_REQUEST, SUCCESS, CREATED }
+export default { BAD_REQUEST, SUCCESS, CREATED, GENERIC_ERROR }
 

@@ -9,23 +9,21 @@ class Verifier {
    verifyEmail(req: Request, res: Response, next: NextFunction) {
       const { email } = req.body;
 
-      let errorMessage;
-      if (!email) {errorMessage = "É necessário informar o email!"};
-
-      if (errorMessage) {throw new AppError(errorMessage, Constant.BAD_REQUEST)};
+      if (!email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);;
 
       User.findOne({
          email: email
       }).exec((err, user) => {
          if (err) {
-            throw new AppError("Algo deu errado! Por favor, tente novamente mais tarde!!", Constant.BAD_REQUEST);
+            throw new AppError("Algo deu errado! Por favor, tente novamente mais tarde!!", Constant.GENERIC_ERROR);
          }
          if (user) {
-            return res.status(500).json({
-               error: {
-                  message: "Já existe um usuário cadastrado com esse email!"
-               },
-               body: null
+            return res.status(Constant.SUCCESS).json({
+               error: null,
+               body: {
+                  success: false,
+                  message: "Este email já está sendo utilizado!"
+               }
             })
          }
          next();

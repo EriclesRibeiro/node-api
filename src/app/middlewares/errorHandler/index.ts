@@ -2,15 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import { AppError } from '../../../utils/error';
 
 const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
-
-    if (error.name === 'ValidationError') {
-        return response.status(400).send({
-            error: { 
-                message: error.message 
-            },
-            body: null
-        });
-    }
     
     if (error instanceof AppError) {
         return response.status(error.statusCode).send({
@@ -29,4 +20,4 @@ const errorHandler = (error: Error, request: Request, response: Response, next: 
     });
 }
 
-export default errorHandler;
+export { errorHandler };

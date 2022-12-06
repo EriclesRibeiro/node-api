@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { SignUpUseCase } from "../../useCases/signUpUseCase";
 import { VerifyEmailUseCase } from "../../useCases/verifyEmailUseCase";
 import { SignInUseCase } from '../../useCases/signInUseCase';
@@ -7,7 +7,7 @@ import { AppError } from "../../../utils/error";
 
 class AuthenticateController {
     async signUp(request: Request, response: Response) {
-        
+
         const { email, password, name, sexo } = request.body;
 
         //Validar required
@@ -34,14 +34,11 @@ class AuthenticateController {
             }
         });
     }
-    
-    async verifyEmail(request: Request, response: Response, next: NextFunction) {
+    async verifyEmail(request: Request, response: Response) {
             const email: string = request.query.email as string;
 
             //Validar email required
-            if (!email) {
-                throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
-            };
+            if (!email || email === undefined) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
 
             const verifyEmail = new VerifyEmailUseCase();
             const result = await verifyEmail.execute({
@@ -52,6 +49,10 @@ class AuthenticateController {
     }
     async signIn(request: Request, response: Response) {
         const { email, password } = request.body;
+
+        if (!email || email === undefined) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+        if (!password || password === undefined) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
+
         const signInUseCase = new SignInUseCase();
 
         const result = await signInUseCase.execute({

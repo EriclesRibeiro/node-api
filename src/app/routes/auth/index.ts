@@ -8,10 +8,8 @@ const router = Router();
 const authenticateController = new AuthenticateController();
 const verifier = new Verifier();
 
-
-
 router.post("/signup", verifier.verifyEmail, tryCatch(authenticateController.signUp));
 router.get("/verifyEmail", tryCatch(authenticateController.verifyEmail));
-router.post("/signin", authenticateController.signIn);
+router.post("/signin", tryCatch(authenticateController.signIn));
 
 module.exports = router;

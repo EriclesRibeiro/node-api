@@ -9,44 +9,49 @@ interface IUserRequest {
 
 class SignInUseCase {
     async execute({ email, password }: IUserRequest) {
-        try {
-            const User = db.user;
 
-            if (!email) {
-                throw new Error("É necessário informar o email!");
-            }
-            if (!password) {
-                throw new Error("É necessário informar a senha!");
-            }
-            const user = await User.findOne({
-                email: email
-            });
+        const User = db.user;
 
-            if (!user) {
-                throw new Error("Email ou senha não conferem!");
-            }
-            const credentialPassword: string = user.password as string;
-            const isValid = compareSync(password, credentialPassword);
+        const user = await User.findOne({
+            email: email
+        });
 
-            if (!isValid) {
-                throw new Error("Senha incorreta!");
-            }
-
-            const secret: string = process.env.SECRET as string;
-            const token = sign({ name: user._id }, secret, {
-                expiresIn: 7200 //2h
-            });
-
+        if (!user) {
             return {
-                name: user.name,
-                email: user.email,
-                accessToken: {
-                    token: token
+                error: null,
+                body: {
+                    success: false,
+                    message: "Email ou senha não conferem!"
                 }
             }
+        }
+        const credentialPassword: string = user.password as string;
+        const isValid = compareSync(password, credentialPassword);
 
-        } catch (error) {
-            throw new Error("Erro ao tentar realizar login! Por favor, tente novamente mais tarde!");
+        if (!isValid) {
+            return {
+                error: null,
+                body: {
+                    success: false,
+                    message: "Email ou senha não conferem!"
+                }
+            }
+        }
+
+        const secret: string = process.env.SECRET as string;
+        const token = sign({ name: user._id }, secret, {
+            expiresIn: 7200 //2h
+        });
+        return {
+            error: null,
+            body: {
+                success: true,
+                data: {
+                    name: user.name,
+                    email: user.email,
+                    accessToken: token
+                }
+            }
         }
     }
 }

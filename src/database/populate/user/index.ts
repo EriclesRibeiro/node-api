@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import db from "../../models";
 import dateFormated from "../../../utils/dateFormated";
+import { hashSync } from "bcrypt";
 
 export default function initialUser() {
     const User = db.user;
@@ -13,7 +14,7 @@ export default function initialUser() {
                 categories: [],
                 created_at: currentDate,
                 updated_at: currentDate,
-                password: "admin",
+                password: hashSync("admin", 8),
                 email: "admin@cronos.io",
                 roles: []
             });
