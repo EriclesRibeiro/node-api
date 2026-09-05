@@ -1,5 +1,6 @@
-import app from './app';
 import 'dotenv/config';
+import './utils/validateEnvironment';
+import app from './app';
 
 const PORT = process.env.PORT || process.env.LOCAL_PORT;
 

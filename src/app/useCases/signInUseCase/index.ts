@@ -1,6 +1,8 @@
 import db from "../../../database/models";
 import { compareSync } from 'bcrypt'
 import { sign } from 'jsonwebtoken';
+import Constant from '../../../utils/constants';
+import { AppError } from "../../../utils/error";
 
 interface IUserRequest {
     email: string;
@@ -17,25 +19,14 @@ class SignInUseCase {
         });
 
         if (!user) {
-            return {
-                error: null,
-                body: {
-                    success: false,
-                    message: "Email ou senha não conferem!"
-                }
-            }
+            throw new AppError("Email ou senha não conferem!", Constant.UNAUTHORIZED);
         }
+
         const credentialPassword: string = user.password as string;
         const isValid = compareSync(password, credentialPassword);
 
         if (!isValid) {
-            return {
-                error: null,
-                body: {
-                    success: false,
-                    message: "Email ou senha não conferem!"
-                }
-            }
+            throw new AppError("Email ou senha não conferem!", Constant.UNAUTHORIZED);
         }
 
         const secret: string = process.env.SECRET as string;

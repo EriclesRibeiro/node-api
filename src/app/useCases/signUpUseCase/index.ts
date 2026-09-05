@@ -13,7 +13,7 @@ interface IUserRequest {
 
 class SignUpUseCase {
     async execute({ name, password, email, sexo }: IUserRequest) {
-        
+
         const currentDate = dateFormated(new Date());
         const User = db.user;
         const Role = db.role;
@@ -22,30 +22,27 @@ class SignUpUseCase {
             name: name,
             sexo: sexo,
             email: email,
-            password: hashSync(password, 8),
+            password: hashSync(password, 12),
             categories: [],
             created_at: currentDate,
             updated_at: currentDate,
             roles: []
-        }).save((err, user) => {
-            if (err) {
-                throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
-            }
-            Role.find({
-                name: { $in: 'authenticated' }
-            }, (err: any, roles: any) => {
-                if (err) {
-                    throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
-                }
-                user.roles = roles.map((role: any) => role._id)
-                user.save((err, response) => {
-                    if (err) {
-                        throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
-                    }
-                });
-            });
         });
-        return true;
+
+        try {
+            await user.save();
+
+            const roles = await Role.find({
+                name: { $in: ['authenticated'] }
+            });
+
+            user.roles = roles.map((role: any) => role._id);
+            await user.save();
+
+            return true;
+        } catch (error) {
+            throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
+        }
     }
 }
 

@@ -3,6 +3,8 @@ import connectMongoose from '../../database';
 import appMiddleware from '../middlewares/header';
 
 export default function appConfig(app: Express): void {
-    connectMongoose();
+    connectMongoose().catch((error) => {
+        console.error('Falha ao conectar ao MongoDB:', error);
+    });
     appMiddleware(app);
 }

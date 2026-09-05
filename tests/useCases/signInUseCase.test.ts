@@ -36,35 +36,25 @@ describe('SignInUseCase', () => {
         process.env.SECRET = 'segredo-secreto';
     });
 
-    it('deve retornar sucesso falso quando o usuário não existe', async () => {
+    it('deve lançar AppError quando o usuário não existe', async () => {
         (db.user.findOne as jest.Mock).mockResolvedValue(null);
 
-        const result = await useCase.execute({
-            email: 'nao.existe@email.com',
-            password: '123456',
-        });
+        await expect(
+            useCase.execute({ email: 'nao.existe@email.com', password: '123456' })
+        ).rejects.toThrow('Email ou senha não conferem!');
 
-        expect(result).toEqual({
-            error: null,
-            body: {
-                success: false,
-                message: 'Email ou senha não conferem!',
-            },
-        });
         expect(compareSync).not.toHaveBeenCalled();
         expect(sign).not.toHaveBeenCalled();
     });
 
-    it('deve retornar sucesso falso quando a senha não confere', async () => {
+    it('deve lançar AppError quando a senha não confere', async () => {
         (db.user.findOne as jest.Mock).mockResolvedValue(userMock);
         (compareSync as jest.Mock).mockReturnValue(false);
 
-        const result = await useCase.execute({
-            email: 'joao@email.com',
-            password: 'senha-errada',
-        });
+        await expect(
+            useCase.execute({ email: 'joao@email.com', password: 'senha-errada' })
+        ).rejects.toThrow('Email ou senha não conferem!');
 
-        expect(result.body.success).toBe(false);
         expect(compareSync).toHaveBeenCalledWith('senha-errada', 'hash-banco');
         expect(sign).not.toHaveBeenCalled();
     });

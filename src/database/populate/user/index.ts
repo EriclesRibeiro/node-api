@@ -1,42 +1,41 @@
-import mongoose from "mongoose";
 import db from "../../models";
 import dateFormated from "../../../utils/dateFormated";
 import { hashSync } from "bcrypt";
 
-export default function initialUser() {
+export default async function initialUser(): Promise<void> {
     const User = db.user;
     const Role = db.role;
-    User.estimatedDocumentCount((err: any, count: number) => {
-        const currentDate = dateFormated(new Date())
-        if (!err && count === 0) {
-            const user = new User({
-                name: "administrator",
-                categories: [],
-                created_at: currentDate,
-                updated_at: currentDate,
-                password: hashSync("admin", 8),
-                email: "admin@cronos.io",
-                roles: []
-            });
-            user.save((err, user) => {
-                if (err) {
-                    console.log("error when trying to add User 'administrator'", err);
-                }
-                Role.find({
-                    name: { $in: 'admin' }
-                }, (err: any, roles: any) => {
-                    if (err) {
-                        console.log("error when trying to add role 'admin' in the user 'administrator'", err);
-                    }
-                    user.roles = roles.map((role:any) => role._id)
-                    user.save(err => {
-                        if (err) {
-                            console.log("error when trying to save the user 'admin' with role")
-                        }
-                        console.log("addes 'administrator' to Users collection");
-                    })
-                })
-            });
-        }
+    const count = await User.estimatedDocumentCount();
+
+    if (count > 0) {
+        return;
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+        throw new Error("ADMIN_EMAIL e ADMIN_PASSWORD devem ser definidos para popular o usuário administrador!");
+    }
+
+    const currentDate = dateFormated(new Date());
+
+    const user = new User({
+        name: "administrator",
+        categories: [],
+        created_at: currentDate,
+        updated_at: currentDate,
+        password: hashSync(adminPassword, 12),
+        email: adminEmail,
+        roles: []
     });
+    await user.save();
+
+    const roles = await Role.find({
+        name: { $in: ['admin'] }
+    });
+
+    user.roles = roles.map((role: any) => role._id);
+    await user.save();
+    console.log("added 'administrator' to Users collection");
 }

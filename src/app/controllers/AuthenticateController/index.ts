@@ -35,10 +35,10 @@ class AuthenticateController {
         });
     }
     async verifyEmail(request: Request, response: Response) {
-            const email: string = request.query.email as string;
+            const email: unknown = request.query.email;
 
             //Validar email required
-            if (!email || email === undefined) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+            if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
 
             const verifyEmail = new VerifyEmailUseCase();
             const result = await verifyEmail.execute({

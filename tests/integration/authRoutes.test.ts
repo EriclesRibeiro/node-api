@@ -2,7 +2,7 @@ import request from 'supertest';
 
 jest.mock('../../src/database', () => ({
     __esModule: true,
-    default: jest.fn(),
+    default: jest.fn().mockResolvedValue(undefined),
 }));
 
 const execMock: jest.Mock = jest.fn();
@@ -59,8 +59,8 @@ describe('Rotas de autenticação (integração)', () => {
     describe('POST /api/auth/signup', () => {
         it('deve cadastrar um novo usuário com 201', async () => {
             execMock.mockImplementation((cb: any) => cb(null, null));
-            userSaveMock.mockImplementation((cb: any) => cb(null, userInstance));
-            roleFindMock.mockImplementation((_query: any, cb: any) => cb(null, []));
+            userSaveMock.mockResolvedValue(userInstance);
+            roleFindMock.mockResolvedValue([]);
 
             const response = await request(app)
                 .post('/api/auth/signup')
@@ -163,15 +163,18 @@ describe('Rotas de autenticação (integração)', () => {
             });
         });
 
-        it('deve retornar sucesso falso quando as credenciais são inválidas', async () => {
+        it('deve retornar 401 quando as credenciais são inválidas', async () => {
             findOneAwaitedValue = null;
 
             const response = await request(app)
                 .post('/api/auth/signin')
                 .send({ email: 'nao.existe@email.com', password: '123456' });
 
-            expect(response.status).toBe(200);
-            expect(response.body.body.success).toBe(false);
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual({
+                error: { message: 'Email ou senha não conferem!' },
+                body: null,
+            });
         });
 
         it('deve retornar 400 quando faltam credenciais', async () => {

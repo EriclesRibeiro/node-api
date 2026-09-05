@@ -20,45 +20,20 @@ import db from '../../src/database/models';
 describe('SignUpUseCase', () => {
     const useCase = new SignUpUseCase();
 
-    const buildUserInstance = (saveImpl: (err: Error | null, user?: any) => void) => {
-        const instance = {
-            name: '',
-            sexo: '',
-            email: '',
-            password: '',
-            roles: [] as string[],
-            save: jest.fn(),
-        };
-        (instance.save as jest.Mock).mockImplementation(saveImpl);
-        return instance;
-    };
-
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
     it('deve cadastrar usuário e atribuir roles de autenticado', async () => {
         const roles = [{ _id: 'role-1' }, { _id: 'role-2' }];
-
-        const userInstance = buildUserInstance((err, user) => {
-            if (err) return;
-            user.roles = roles.map((role) => role._id);
-            user.save((err2: Error | null) => {
-                expect(err2).toBeNull();
-            });
-        });
+        const userInstance: Record<string, any> = { roles: [] as string[], save: jest.fn() };
+        (userInstance.save as jest.Mock).mockResolvedValue(userInstance);
 
         (db.user as unknown as jest.Mock).mockImplementation((data: any) => {
             Object.assign(userInstance, data);
             return userInstance;
         });
-        (db.role.find as jest.Mock).mockImplementation((_query, cb) => {
-            cb(null, roles);
-        });
-
-        userInstance.save.mockImplementation((cb: any) => {
-            cb(null, userInstance);
-        });
+        (db.role.find as jest.Mock).mockResolvedValue(roles);
 
         const result = await useCase.execute({
             name: 'Maria',
@@ -71,15 +46,16 @@ describe('SignUpUseCase', () => {
         expect(userInstance.name).toBe('Maria');
         expect(userInstance.sexo).toBe('F');
         expect(userInstance.roles).toEqual(['role-1', 'role-2']);
+        expect(db.role.find).toHaveBeenCalledWith({
+            name: { $in: ['authenticated'] },
+        });
     });
 
-    it('deve lançar AppError quando ocorre erro no save inicial', async () => {
-        const userInstance = buildUserInstance(() => {});
+    it('deve lançar AppError quando ocorre erro no save', async () => {
+        const userInstance: Record<string, any> = { roles: [] as string[], save: jest.fn() };
+        (userInstance.save as jest.Mock).mockRejectedValue(new Error('falha no banco'));
 
-        (db.user as unknown as jest.Mock).mockReturnValue(userInstance);
-        userInstance.save.mockImplementation((cb: any) => {
-            cb(new Error('falha no banco'));
-        });
+        (db.user as unknown as jest.Mock).mockImplementation(() => userInstance);
 
         let caught: unknown;
         try {
