@@ -55,6 +55,22 @@ describe('ensureAuthenticated', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
+    it('deve retornar 401 quando o header não usa o esquema Bearer', () => {
+        const req = { headers: { authorization: 'token-sem-scheme' } } as Request;
+        const res = mockResponse();
+        const next = mockNext();
+
+        ensureAuthenticated(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            error: { message: 'Não autorizado!' },
+            body: null,
+        });
+        expect(verify).not.toHaveBeenCalled();
+        expect(next).not.toHaveBeenCalled();
+    });
+
     it('deve chamar next() quando o token é válido', () => {
         const req = { headers: { authorization: 'Bearer token-valido' } } as Request;
         const res = mockResponse();
@@ -64,6 +80,7 @@ describe('ensureAuthenticated', () => {
         ensureAuthenticated(req, res, next);
 
         expect(verify).toHaveBeenCalledWith('token-valido', 'segredo');
+        expect(req.user).toEqual({});
         expect(next).toHaveBeenCalledTimes(1);
         expect(res.status).not.toHaveBeenCalled();
     });

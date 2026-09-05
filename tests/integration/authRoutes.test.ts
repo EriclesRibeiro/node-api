@@ -27,7 +27,7 @@ jest.mock('../../src/database/models', () => ({
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('hash-gerado'),
-    compareSync: jest.fn(),
+    compare: jest.fn(),
 }));
 
 jest.mock('jsonwebtoken', () => ({
@@ -35,7 +35,7 @@ jest.mock('jsonwebtoken', () => ({
 }));
 
 import app from '../../src/app';
-import { compareSync } from 'bcrypt';
+import { compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 describe('Rotas de autenticação (integração)', () => {
@@ -43,6 +43,7 @@ describe('Rotas de autenticação (integração)', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+        execMock.mockReset();
         process.env.SECRET = 'segredo-teste';
 
         userInstance = { roles: [], save: userSaveMock };
@@ -137,7 +138,7 @@ describe('Rotas de autenticação (integração)', () => {
                 email: 'joao@email.com',
                 password: 'hash-banco',
             };
-            (compareSync as jest.Mock).mockReturnValue(true);
+            (compare as jest.Mock).mockResolvedValue(true);
             (sign as jest.Mock).mockReturnValue('token-gerado');
 
             const response = await request(app)
@@ -179,6 +180,26 @@ describe('Rotas de autenticação (integração)', () => {
 
             expect(response.status).toBe(400);
             expect(response.body.error.message).toBe('É necessário informar a senha!');
+        });
+    });
+
+    describe('CORS', () => {
+        it('deve rejeitar origem não configurada', async () => {
+            const response = await request(app)
+                .post('/api/auth/signin')
+                .set('Origin', 'http://evil.example.com')
+                .send({ email: 'x@email.com', password: '123456' });
+
+            expect(response.status).toBe(500);
+        });
+
+        it('deve permitir origem local quando CORS_ORIGINS não está definido', async () => {
+            const response = await request(app)
+                .post('/api/auth/signin')
+                .set('Origin', 'http://localhost:3000')
+                .send({ email: 'x@email.com', password: '123456' });
+
+            expect(response.status).toBe(401);
         });
     });
 });

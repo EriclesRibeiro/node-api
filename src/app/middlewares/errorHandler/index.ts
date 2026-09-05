@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
+import { ErrorRequestHandler } from 'express'
 import { AppError } from '../../../utils/error';
 
-const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
+const errorHandler: ErrorRequestHandler = (error, request, response, next) => {
     
     if (error instanceof AppError) {
         return response.status(error.statusCode).send({
@@ -11,6 +11,8 @@ const errorHandler = (error: Error, request: Request, response: Response, next: 
             body: null
         });
     }
+
+    console.error('Erro não tratado:', error);
 
     return response.status(500).send({
         error: { 

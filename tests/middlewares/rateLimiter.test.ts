@@ -23,7 +23,7 @@ jest.mock('../../src/database/models', () => ({
 
 jest.mock('bcrypt', () => ({
     hash: jest.fn().mockResolvedValue('hash-gerado'),
-    compareSync: jest.fn(),
+    compare: jest.fn(),
 }));
 
 jest.mock('jsonwebtoken', () => ({

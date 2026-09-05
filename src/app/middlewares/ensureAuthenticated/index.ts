@@ -1,10 +1,18 @@
 import { NextFunction, Request, Response } from "express";
-import { verify } from "jsonwebtoken";
+import { verify, JwtPayload } from "jsonwebtoken";
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: string | JwtPayload;
+        }
+    }
+}
 
 export function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
     const authToken = request.headers.authorization;
 
-    if(!authToken) {
+    if (!authToken) {
         return response.status(401).json({
             error: {
                 message: "Não autorizado!"
@@ -13,11 +21,22 @@ export function ensureAuthenticated(request: Request, response: Response, next: 
         });
     }
 
-    const [, token] = authToken.split(" ");
+    const [scheme, token] = authToken.split(" ");
+
+    if (scheme !== "Bearer" || !token) {
+        return response.status(401).json({
+            error: {
+                message: "Não autorizado!"
+            },
+            body: null
+        });
+    }
+
     const secret = process.env.SECRET as string;
 
     try {
-        verify(token, secret);
+        const payload = verify(token, secret);
+        request.user = payload;
         return next();
     } catch (error) {
         return response.status(401).json({

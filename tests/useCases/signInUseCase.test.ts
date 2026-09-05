@@ -11,7 +11,7 @@ jest.mock('../../src/database/models', () => ({
 }));
 
 jest.mock('bcrypt', () => ({
-    compareSync: jest.fn(),
+    compare: jest.fn(),
 }));
 
 jest.mock('jsonwebtoken', () => ({
@@ -19,7 +19,7 @@ jest.mock('jsonwebtoken', () => ({
 }));
 
 import db from '../../src/database/models';
-import { compareSync } from 'bcrypt';
+import { compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 describe('SignInUseCase', () => {
@@ -43,25 +43,25 @@ describe('SignInUseCase', () => {
             useCase.execute({ email: 'nao.existe@email.com', password: '123456' })
         ).rejects.toThrow('Email ou senha não conferem!');
 
-        expect(compareSync).not.toHaveBeenCalled();
+        expect(compare).not.toHaveBeenCalled();
         expect(sign).not.toHaveBeenCalled();
     });
 
     it('deve lançar AppError quando a senha não confere', async () => {
         (db.user.findOne as jest.Mock).mockResolvedValue(userMock);
-        (compareSync as jest.Mock).mockReturnValue(false);
+        (compare as jest.Mock).mockResolvedValue(false);
 
         await expect(
             useCase.execute({ email: 'joao@email.com', password: 'senha-errada' })
         ).rejects.toThrow('Email ou senha não conferem!');
 
-        expect(compareSync).toHaveBeenCalledWith('senha-errada', 'hash-banco');
+        expect(compare).toHaveBeenCalledWith('senha-errada', 'hash-banco');
         expect(sign).not.toHaveBeenCalled();
     });
 
     it('deve retornar token quando as credenciais são válidas', async () => {
         (db.user.findOne as jest.Mock).mockResolvedValue(userMock);
-        (compareSync as jest.Mock).mockReturnValue(true);
+        (compare as jest.Mock).mockResolvedValue(true);
         (sign as jest.Mock).mockReturnValue('token-gerado');
 
         const result = await useCase.execute({

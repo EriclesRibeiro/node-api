@@ -7,7 +7,7 @@ const UserModel = model("Users",
         created_at: String,
         updated_at: String,
         password: String,
-        email: String,
+        email: { type: String, unique: true },
         sexo: String,
         notifications: Array,
         groups: [

@@ -1,5 +1,5 @@
 import db from "../../../database/models";
-import { compareSync } from 'bcrypt'
+import { compare } from 'bcrypt'
 import { sign } from 'jsonwebtoken';
 import Constant from '../../../utils/constants';
 import { AppError } from "../../../utils/error";
@@ -23,7 +23,7 @@ class SignInUseCase {
         }
 
         const credentialPassword: string = user.password as string;
-        const isValid = compareSync(password, credentialPassword);
+        const isValid = await compare(password, credentialPassword);
 
         if (!isValid) {
             throw new AppError("Email ou senha não conferem!", Constant.UNAUTHORIZED);

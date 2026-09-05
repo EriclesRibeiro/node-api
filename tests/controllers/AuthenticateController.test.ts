@@ -37,7 +37,7 @@ describe('AuthenticateController', () => {
 
     describe('signUp', () => {
         it('deve lançar erro quando email não informado', async () => {
-            const req = { body: { password: '123', name: 'João', sexo: 'M' } } as Request;
+            const req = { body: { password: '123456', name: 'João', sexo: 'M' } } as Request;
             const res = mockResponse();
 
             await expect(controller.signUp(req, res)).rejects.toThrow('É necessário informar o email!');
@@ -50,15 +50,22 @@ describe('AuthenticateController', () => {
             await expect(controller.signUp(req, res)).rejects.toThrow('É necessário informar a senha!');
         });
 
+        it('deve lançar erro quando a senha tem menos de 6 caracteres', async () => {
+            const req = { body: { email: 'a@b.com', password: '123', name: 'João', sexo: 'M' } } as Request;
+            const res = mockResponse();
+
+            await expect(controller.signUp(req, res)).rejects.toThrow('A senha deve ter no mínimo 6 caracteres!');
+        });
+
         it('deve lançar erro quando nome não informado', async () => {
-            const req = { body: { email: 'a@b.com', password: '123', sexo: 'M' } } as Request;
+            const req = { body: { email: 'a@b.com', password: '123456', sexo: 'M' } } as Request;
             const res = mockResponse();
 
             await expect(controller.signUp(req, res)).rejects.toThrow('É necessário informar o nome!');
         });
 
         it('deve lançar erro quando sexo não informado', async () => {
-            const req = { body: { email: 'a@b.com', password: '123', name: 'João' } } as Request;
+            const req = { body: { email: 'a@b.com', password: '123456', name: 'João' } } as Request;
             const res = mockResponse();
 
             await expect(controller.signUp(req, res)).rejects.toThrow('É necessário informar o sexo!');
@@ -67,7 +74,7 @@ describe('AuthenticateController', () => {
         it('deve retornar 201 com sucesso no cadastro', async () => {
             signUpExecute.mockResolvedValue(true);
             const req = {
-                body: { email: 'a@b.com', password: '123', name: 'João', sexo: 'M' },
+                body: { email: 'a@b.com', password: '123456', name: 'João', sexo: 'M' },
             } as Request;
             const res = mockResponse();
 
@@ -76,7 +83,7 @@ describe('AuthenticateController', () => {
             expect(SignUpUseCase).toHaveBeenCalledTimes(1);
             expect(signUpExecute).toHaveBeenCalledWith({
                 email: 'a@b.com',
-                password: '123',
+                password: '123456',
                 name: 'João',
                 sexo: 'M',
             });

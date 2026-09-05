@@ -71,4 +71,20 @@ describe('SignUpUseCase', () => {
 
         expect(caught).toBeInstanceOf(AppError);
     });
+
+    it('deve lançar AppError de e-mail em uso quando ocorre erro de chave duplicada (11000)', async () => {
+        const userInstance: Record<string, any> = { roles: [] as string[], save: jest.fn() };
+        (userInstance.save as jest.Mock).mockRejectedValue({ code: 11000 });
+
+        (db.user as unknown as jest.Mock).mockImplementation(() => userInstance);
+
+        await expect(
+            useCase.execute({
+                name: 'Maria',
+                password: '123456',
+                email: 'duplicado@email.com',
+                sexo: 'F',
+            })
+        ).rejects.toThrow('Este email já está sendo utilizado!');
+    });
 });

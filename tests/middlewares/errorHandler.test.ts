@@ -26,7 +26,8 @@ describe('errorHandler', () => {
         });
     });
 
-    it('deve responder com 500 para erros genéricos', () => {
+    it('deve responder com 500 para erros genéricos e registrar o erro', () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new Error('Erro inesperado');
         const res = mockResponse();
         const next = mockNext();
@@ -38,5 +39,7 @@ describe('errorHandler', () => {
             error: { message: 'Algo deu errado! Por favor, tente novamente mais tarde!' },
             body: null,
         });
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Erro não tratado:', error);
+        consoleErrorSpy.mockRestore();
     });
 });

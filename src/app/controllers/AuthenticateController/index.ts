@@ -13,6 +13,7 @@ class AuthenticateController {
         //Validar required
         if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
         if (typeof password !== 'string' || !password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
+        if (typeof password !== 'string' || password.length < 6) throw new AppError("A senha deve ter no mínimo 6 caracteres!", Constant.BAD_REQUEST);
         if (typeof name !== 'string' || !name) throw new AppError("É necessário informar o nome!", Constant.BAD_REQUEST);
         if (typeof sexo !== 'string' || !sexo) throw new AppError("É necessário informar o sexo!", Constant.BAD_REQUEST);
 

@@ -41,6 +41,9 @@ class SignUpUseCase {
 
             return true;
         } catch (error) {
+            if ((error as { code?: number }).code === 11000) {
+                throw new AppError("Este email já está sendo utilizado!", Constant.BAD_REQUEST);
+            }
             throw new AppError("Ocorreu um erro ao cadastrar!", Constant.GENERIC_ERROR);
         }
     }

@@ -1,7 +1,7 @@
 import db from "../../../database/models";
 
 interface IVerifyRequest {
-    email: String;
+    email: string;
 }
 
 class VerifyEmailUseCase {
@@ -10,23 +10,14 @@ class VerifyEmailUseCase {
             const user = await User.findOne({
                 email: email
             })
-            if (user) {
-                return {
-                    error: null,
-                    body: {
-                        success: true,
-                        data: { exists: true }
-                    }
-                };
-            } else {
-                return {
-                    error: null,
-                    body: {
-                        success: true,
-                        data: { exists: false }
-                    }
-                };
-            }
+
+            return {
+                error: null,
+                body: {
+                    success: true,
+                    data: { exists: !!user }
+                }
+            };
     }
 }
 
