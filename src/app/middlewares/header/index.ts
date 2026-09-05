@@ -6,7 +6,7 @@ import { errorHandler } from '../errorHandler';
 export default function appMiddleware(app: Express): void {
     app.use(cors());
     app.use(express.json());
-    app.use('*', function(req: Request, res: Response, next: NextFunction) {
+    app.use(function(req: Request, res: Response, next: NextFunction) {
         res.setHeader('Access-Control-Allow-Headers', 'x-access-token, Origin, Content-Type, Accept');
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Credentials', 'true');
