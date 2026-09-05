@@ -26,29 +26,41 @@ describe('Verifier', () => {
 
     const mockNext = () => jest.fn() as unknown as NextFunction;
 
+    const mockFindOneResult = (value: unknown) => {
+        (db.user.findOne as jest.Mock).mockReturnValue({
+            exec: jest.fn().mockResolvedValue(value),
+        });
+    };
+
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    it('deve lançar AppError quando o email não é informado', () => {
+    it('deve rejeitar quando o email não é informado', async () => {
         const req = { body: {} } as Request;
         const res = mockResponse();
         const next = mockNext();
 
-        expect(() => verifier.verifyEmail(req, res, next)).toThrow(AppError);
+        await expect(verifier.verifyEmail(req, res, next)).rejects.toThrow(AppError);
         expect(db.user.findOne).not.toHaveBeenCalled();
     });
 
-    it('deve retornar erro quando o email já está em uso', () => {
-        const req = { body: { email: 'existente@email.com' } } as Request;
+    it('deve rejeitar quando o email não é uma string', async () => {
+        const req = { body: { email: ['a@b.com'] } } as Request;
         const res = mockResponse();
         const next = mockNext();
 
-        (db.user.findOne as jest.Mock).mockReturnValue({
-            exec: (cb: any) => cb(null, { email: 'existente@email.com' }),
-        });
+        await expect(verifier.verifyEmail(req, res, next)).rejects.toThrow(AppError);
+        expect(db.user.findOne).not.toHaveBeenCalled();
+    });
 
-        verifier.verifyEmail(req, res, next);
+    it('deve retornar erro quando o email já está em uso', async () => {
+        const req = { body: { email: 'existente@email.com' } } as Request;
+        const res = mockResponse();
+        const next = mockNext();
+        mockFindOneResult({ email: 'existente@email.com' });
+
+        await verifier.verifyEmail(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
@@ -61,28 +73,30 @@ describe('Verifier', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
-    it('deve lançar AppError genérico quando ocorre erro no banco', () => {
+    it('deve chamar next com AppError quando ocorre erro no banco', async () => {
         const req = { body: { email: 'teste@email.com' } } as Request;
         const res = mockResponse();
         const next = mockNext();
-
         (db.user.findOne as jest.Mock).mockReturnValue({
-            exec: (cb: any) => cb(new Error('falha')),
+            exec: jest.fn().mockRejectedValue(new Error('falha no banco')),
         });
 
-        expect(() => verifier.verifyEmail(req, res, next)).toThrow(AppError);
+        await verifier.verifyEmail(req, res, next);
+
+        const nextMock = next as unknown as jest.Mock;
+        expect(res.status).not.toHaveBeenCalled();
+        expect(nextMock).toHaveBeenCalledTimes(1);
+        expect(nextMock).toHaveBeenCalledWith(expect.any(AppError));
+        expect((nextMock.mock.calls[0][0] as AppError).statusCode).toBe(500);
     });
 
-    it('deve chamar next() quando o email está disponível', () => {
+    it('deve chamar next() quando o email está disponível', async () => {
         const req = { body: { email: 'novo@email.com' } } as Request;
         const res = mockResponse();
         const next = mockNext();
+        mockFindOneResult(null);
 
-        (db.user.findOne as jest.Mock).mockReturnValue({
-            exec: (cb: any) => cb(null, null),
-        });
-
-        verifier.verifyEmail(req, res, next);
+        await verifier.verifyEmail(req, res, next);
 
         expect(next).toHaveBeenCalledTimes(1);
         expect(res.status).not.toHaveBeenCalled();

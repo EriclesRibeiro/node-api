@@ -6,17 +6,18 @@ import Constant from "../../../utils/constants";
 const User = db.user;
 
 class Verifier {
-   verifyEmail(req: Request, res: Response, next: NextFunction) {
+   async verifyEmail(req: Request, res: Response, next: NextFunction) {
       const { email } = req.body;
 
-      if (!email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);;
+      if (typeof email !== 'string' || !email) {
+         throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+      }
 
-      User.findOne({
-         email: email
-      }).exec((err, user) => {
-         if (err) {
-            throw new AppError("Algo deu errado! Por favor, tente novamente mais tarde!!", Constant.GENERIC_ERROR);
-         }
+      try {
+         const user = await User.findOne({
+            email: email
+         }).exec();
+
          if (user) {
             return res.status(Constant.SUCCESS).json({
                error: null,
@@ -26,8 +27,11 @@ class Verifier {
                }
             })
          }
-         next();
-      });
+
+         return next();
+      } catch (error) {
+         return next(new AppError("Algo deu errado! Por favor, tente novamente mais tarde!!", Constant.GENERIC_ERROR));
+      }
    }
 }
 

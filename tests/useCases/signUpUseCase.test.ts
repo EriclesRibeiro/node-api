@@ -12,7 +12,7 @@ jest.mock('../../src/database/models', () => ({
 }));
 
 jest.mock('bcrypt', () => ({
-    hashSync: jest.fn().mockReturnValue('hash-gerado'),
+    hash: jest.fn().mockResolvedValue('hash-gerado'),
 }));
 
 import db from '../../src/database/models';

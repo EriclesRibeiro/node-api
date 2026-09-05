@@ -1,6 +1,6 @@
 import db from "../../models";
 import dateFormated from "../../../utils/dateFormated";
-import { hashSync } from "bcrypt";
+import { hash } from "bcrypt";
 
 export default async function initialUser(): Promise<void> {
     const User = db.user;
@@ -25,7 +25,7 @@ export default async function initialUser(): Promise<void> {
         categories: [],
         created_at: currentDate,
         updated_at: currentDate,
-        password: hashSync(adminPassword, 12),
+        password: await hash(adminPassword, 12),
         email: adminEmail,
         roles: []
     });

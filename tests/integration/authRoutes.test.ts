@@ -1,10 +1,5 @@
 import request from 'supertest';
 
-jest.mock('../../src/database', () => ({
-    __esModule: true,
-    default: jest.fn().mockResolvedValue(undefined),
-}));
-
 const execMock: jest.Mock = jest.fn();
 const userSaveMock: jest.Mock = jest.fn();
 const roleFindMock: jest.Mock = jest.fn();
@@ -31,8 +26,8 @@ jest.mock('../../src/database/models', () => ({
 }));
 
 jest.mock('bcrypt', () => ({
+    hash: jest.fn().mockResolvedValue('hash-gerado'),
     compareSync: jest.fn(),
-    hashSync: jest.fn().mockReturnValue('hash-gerado'),
 }));
 
 jest.mock('jsonwebtoken', () => ({
@@ -58,7 +53,7 @@ describe('Rotas de autenticação (integração)', () => {
 
     describe('POST /api/auth/signup', () => {
         it('deve cadastrar um novo usuário com 201', async () => {
-            execMock.mockImplementation((cb: any) => cb(null, null));
+            execMock.mockResolvedValue(null);
             userSaveMock.mockResolvedValue(userInstance);
             roleFindMock.mockResolvedValue([]);
 
@@ -86,7 +81,7 @@ describe('Rotas de autenticação (integração)', () => {
         });
 
         it('deve retornar 200 com aviso quando o email já está em uso', async () => {
-            execMock.mockImplementation((cb: any) => cb(null, { email: 'usado@email.com' }));
+            execMock.mockResolvedValue({ email: 'usado@email.com' });
 
             const response = await request(app)
                 .post('/api/auth/signup')

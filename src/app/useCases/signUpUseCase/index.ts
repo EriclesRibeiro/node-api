@@ -1,6 +1,6 @@
 import db from "../../../database/models";
 import dateFormated from "../../../utils/dateFormated";
-import { hashSync } from 'bcrypt'
+import { hash } from 'bcrypt'
 import Constant from '../../../utils/constants';
 import { AppError } from "../../../utils/error";
 
@@ -22,7 +22,7 @@ class SignUpUseCase {
             name: name,
             sexo: sexo,
             email: email,
-            password: hashSync(password, 12),
+            password: await hash(password, 12),
             categories: [],
             created_at: currentDate,
             updated_at: currentDate,

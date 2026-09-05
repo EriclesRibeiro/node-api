@@ -11,13 +11,13 @@ class AuthenticateController {
         const { email, password, name, sexo } = request.body;
 
         //Validar required
-        if (!email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
-        if (!password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
-        if (!name) throw new AppError("É necessário informar o nome!", Constant.BAD_REQUEST);
-        if (!sexo) throw new AppError("É necessário informar o sexo!", Constant.BAD_REQUEST);
+        if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+        if (typeof password !== 'string' || !password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
+        if (typeof name !== 'string' || !name) throw new AppError("É necessário informar o nome!", Constant.BAD_REQUEST);
+        if (typeof sexo !== 'string' || !sexo) throw new AppError("É necessário informar o sexo!", Constant.BAD_REQUEST);
 
         const signUpUseCase = new SignUpUseCase()
-        const userCreated = await signUpUseCase.execute({
+        await signUpUseCase.execute({
             email,
             password,
             name,
@@ -50,8 +50,8 @@ class AuthenticateController {
     async signIn(request: Request, response: Response) {
         const { email, password } = request.body;
 
-        if (!email || email === undefined) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
-        if (!password || password === undefined) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
+        if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+        if (typeof password !== 'string' || !password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
 
         const signInUseCase = new SignInUseCase();
 
