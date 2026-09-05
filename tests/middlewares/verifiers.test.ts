@@ -54,7 +54,7 @@ describe('Verifier', () => {
         expect(db.user.findOne).not.toHaveBeenCalled();
     });
 
-    it('deve retornar erro quando o email já está em uso', async () => {
+    it('deve retornar AppError 409 quando o email já está em uso', async () => {
         const req = { body: { email: 'existente@email.com' } } as Request;
         const res = mockResponse();
         const next = mockNext();
@@ -62,15 +62,13 @@ describe('Verifier', () => {
 
         await verifier.verifyEmail(req, res, next);
 
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith({
-            error: null,
-            body: {
-                success: false,
-                message: 'Este email já está sendo utilizado!',
-            },
-        });
-        expect(next).not.toHaveBeenCalled();
+        const nextMock = next as unknown as jest.Mock;
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.json).not.toHaveBeenCalled();
+        expect(nextMock).toHaveBeenCalledTimes(1);
+        expect(nextMock).toHaveBeenCalledWith(expect.any(AppError));
+        expect((nextMock.mock.calls[0][0] as AppError).statusCode).toBe(409);
+        expect((nextMock.mock.calls[0][0] as AppError).message).toBe('Este email já está sendo utilizado!');
     });
 
     it('deve chamar next com AppError quando ocorre erro no banco', async () => {

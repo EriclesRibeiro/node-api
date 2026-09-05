@@ -1,4 +1,4 @@
-export default function dateFormated(data: Date){
+export default function dateFormatted(data: Date){
     const dia  = data.getUTCDate().toString().padStart(2, '0');
     const mes  = (data.getUTCMonth()+1).toString().padStart(2, '0');
     const ano  = data.getUTCFullYear();

@@ -43,7 +43,18 @@ describe('SignInUseCase', () => {
             useCase.execute({ email: 'nao.existe@email.com', password: '123456' })
         ).rejects.toThrow('Email ou senha não conferem!');
 
-        expect(compare).not.toHaveBeenCalled();
+        expect(compare).toHaveBeenCalledTimes(1);
+        expect(sign).not.toHaveBeenCalled();
+    });
+
+    it('deve lançar AppError quando o usuário não possui senha', async () => {
+        (db.user.findOne as jest.Mock).mockResolvedValue({ ...userMock, password: undefined });
+
+        await expect(
+            useCase.execute({ email: 'joao@email.com', password: '123456' })
+        ).rejects.toThrow('Email ou senha não conferem!');
+
+        expect(compare).toHaveBeenCalledTimes(1);
         expect(sign).not.toHaveBeenCalled();
     });
 
@@ -75,7 +86,7 @@ describe('SignInUseCase', () => {
             email: 'joao@email.com',
             accessToken: 'token-gerado',
         });
-        expect(sign).toHaveBeenCalledWith({ name: 'user-123' }, 'segredo-secreto', {
+        expect(sign).toHaveBeenCalledWith({ sub: 'user-123' }, 'segredo-secreto', {
             expiresIn: 7200,
         });
     });

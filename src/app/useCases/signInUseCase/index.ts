@@ -1,6 +1,7 @@
 import db from "../../../database/models";
 import { compare } from 'bcrypt'
 import { sign } from 'jsonwebtoken';
+import normalizeEmail from '../../../utils/normalizeEmail';
 import Constant from '../../../utils/constants';
 import { AppError } from "../../../utils/error";
 
@@ -12,17 +13,27 @@ interface IUserRequest {
 class SignInUseCase {
     async execute({ email, password }: IUserRequest) {
 
+        email = normalizeEmail(email);
         const User = db.user;
 
         const user = await User.findOne({
             email: email
         });
 
+        const DUMMY_HASH = '$2b$10$T4VNLMlbUMn.L0ZjToK0oOao8FVVmPMNuzIEFJxrrvTHmVB5GPIxq';
+
         if (!user) {
+            await compare(password, DUMMY_HASH);
             throw new AppError("Email ou senha não conferem!", Constant.UNAUTHORIZED);
         }
 
-        const credentialPassword: string = user.password as string;
+        const credentialPassword: string | undefined = user.password as string | undefined;
+
+        if (!credentialPassword) {
+            await compare(password, DUMMY_HASH);
+            throw new AppError("Email ou senha não conferem!", Constant.UNAUTHORIZED);
+        }
+
         const isValid = await compare(password, credentialPassword);
 
         if (!isValid) {
@@ -30,7 +41,7 @@ class SignInUseCase {
         }
 
         const secret: string = process.env.SECRET as string;
-        const token = sign({ name: user._id }, secret, {
+        const token = sign({ sub: user._id }, secret, {
             expiresIn: 7200 //2h
         });
         return {

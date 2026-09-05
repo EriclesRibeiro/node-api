@@ -16,8 +16,8 @@ const ProjectModel = model("Projects",
         created_at: String,
         updated_at: String,
         identifier: String,
-        categorie: String,
-        repositorie: String
+        category: String,
+        repository: String
     })
 );
 

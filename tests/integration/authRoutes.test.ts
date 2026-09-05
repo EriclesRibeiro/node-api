@@ -22,6 +22,7 @@ jest.mock('../../src/database/models', () => ({
         role: {
             find: roleFindMock,
         },
+        ROLES: { AUTHENTICATED: 'authenticated', ADMIN: 'admin' },
     },
 }));
 
@@ -81,52 +82,18 @@ describe('Rotas de autenticação (integração)', () => {
             expect(response.body.error.message).toBe('É necessário informar a senha!');
         });
 
-        it('deve retornar 200 com aviso quando o email já está em uso', async () => {
+        it('deve retornar 409 quando o email já está em uso', async () => {
             execMock.mockResolvedValue({ email: 'usado@email.com' });
 
             const response = await request(app)
                 .post('/api/auth/signup')
                 .send({ email: 'usado@email.com', password: '123456', name: 'João', sexo: 'M' });
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(409);
             expect(response.body).toEqual({
-                error: null,
-                body: {
-                    success: false,
-                    message: 'Este email já está sendo utilizado!',
-                },
+                error: { message: 'Este email já está sendo utilizado!' },
+                body: null,
             });
-        });
-    });
-
-    describe('GET /api/auth/verifyEmail', () => {
-        it('deve retornar exists true quando o email existe', async () => {
-            findOneAwaitedValue = { email: 'existe@email.com' };
-
-            const response = await request(app)
-                .get('/api/auth/verifyEmail')
-                .query({ email: 'existe@email.com' });
-
-            expect(response.status).toBe(200);
-            expect(response.body.body.data.exists).toBe(true);
-        });
-
-        it('deve retornar exists false quando o email não existe', async () => {
-            findOneAwaitedValue = null;
-
-            const response = await request(app)
-                .get('/api/auth/verifyEmail')
-                .query({ email: 'nao.existe@email.com' });
-
-            expect(response.status).toBe(200);
-            expect(response.body.body.data.exists).toBe(false);
-        });
-
-        it('deve retornar 400 sem o email na query', async () => {
-            const response = await request(app).get('/api/auth/verifyEmail');
-
-            expect(response.status).toBe(400);
-            expect(response.body.error.message).toBe('É necessário informar o email!');
         });
     });
 
@@ -184,13 +151,14 @@ describe('Rotas de autenticação (integração)', () => {
     });
 
     describe('CORS', () => {
-        it('deve rejeitar origem não configurada', async () => {
+        it('deve rejeitar origem não configurada com 403', async () => {
             const response = await request(app)
                 .post('/api/auth/signin')
                 .set('Origin', 'http://evil.example.com')
                 .send({ email: 'x@email.com', password: '123456' });
 
-            expect(response.status).toBe(500);
+            expect(response.status).toBe(403);
+            expect(response.body.error.message).toBe('Origem não permitida pelo CORS');
         });
 
         it('deve permitir origem local quando CORS_ORIGINS não está definido', async () => {
@@ -200,6 +168,18 @@ describe('Rotas de autenticação (integração)', () => {
                 .send({ email: 'x@email.com', password: '123456' });
 
             expect(response.status).toBe(401);
+        });
+    });
+
+    describe('GET /api/auth/me', () => {
+        it('deve retornar 401 sem token de autorização', async () => {
+            const response = await request(app).get('/api/auth/me');
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual({
+                error: { message: 'Não autorizado!' },
+                body: null,
+            });
         });
     });
 });

@@ -2,6 +2,8 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import indexRoute from '../../routes';
 import { errorHandler } from '../errorHandler';
+import { AppError } from '../../../utils/error';
+import Constant from '../../../utils/constants';
 
 const allowedOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
@@ -23,7 +25,7 @@ const corsOptions: cors.CorsOptions = {
             return callback(null, true);
         }
 
-        return callback(new Error('Origem não permitida pelo CORS'));
+        return callback(new AppError('Origem não permitida pelo CORS', Constant.FORBIDDEN));
     },
     credentials: true
 };

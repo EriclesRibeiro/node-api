@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { verify, JwtPayload } from "jsonwebtoken";
+import db from "../../../database/models";
 
 declare global {
     namespace Express {
@@ -9,7 +10,7 @@ declare global {
     }
 }
 
-export function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
+export async function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
     const authToken = request.headers.authorization;
 
     if (!authToken) {
@@ -36,6 +37,27 @@ export function ensureAuthenticated(request: Request, response: Response, next: 
 
     try {
         const payload = verify(token, secret);
+
+        if (typeof payload === 'string') {
+            return response.status(401).json({
+                error: {
+                    message: "Token inválido!"
+                },
+                body: null
+            });
+        }
+
+        const user = await db.user.findById(payload.sub);
+
+        if (!user) {
+            return response.status(401).json({
+                error: {
+                    message: "Não autorizado!"
+                },
+                body: null
+            });
+        }
+
         request.user = payload;
         return next();
     } catch (error) {

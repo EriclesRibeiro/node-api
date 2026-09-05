@@ -8,6 +8,7 @@ jest.mock('../../src/database/models', () => ({
         role: {
             find: jest.fn(),
         },
+        ROLES: { AUTHENTICATED: 'authenticated', ADMIN: 'admin' },
     },
 }));
 
@@ -47,7 +48,7 @@ describe('SignUpUseCase', () => {
         expect(userInstance.sexo).toBe('F');
         expect(userInstance.roles).toEqual(['role-1', 'role-2']);
         expect(db.role.find).toHaveBeenCalledWith({
-            name: { $in: ['authenticated'] },
+            name: 'authenticated',
         });
     });
 

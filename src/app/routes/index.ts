@@ -1,7 +1,7 @@
 import { Router } from 'express';
+import authRoutes from './auth';
 
 const indexRoute = Router();
-const authRoutes = require('./auth');
 
 indexRoute.use("/api/auth", authRoutes);
 

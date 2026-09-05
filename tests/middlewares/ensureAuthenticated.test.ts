@@ -5,7 +5,18 @@ jest.mock('jsonwebtoken', () => ({
     verify: jest.fn(),
 }));
 
+jest.mock('../../src/database/models', () => ({
+    __esModule: true,
+    default: {
+        user: {
+            findById: jest.fn(),
+        },
+        role: {},
+    },
+}));
+
 import { verify } from 'jsonwebtoken';
+import db from '../../src/database/models';
 
 describe('ensureAuthenticated', () => {
     const mockResponse = () => {
@@ -71,17 +82,52 @@ describe('ensureAuthenticated', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
-    it('deve chamar next() quando o token é válido', () => {
+    it('deve chamar next() quando o token é válido e o usuário existe', async () => {
         const req = { headers: { authorization: 'Bearer token-valido' } } as Request;
         const res = mockResponse();
         const next = mockNext();
-        (verify as jest.Mock).mockReturnValue({});
+        (verify as jest.Mock).mockReturnValue({ sub: 'user-123' });
+        (db.user.findById as jest.Mock).mockResolvedValue({ _id: 'user-123', roles: [] });
 
-        ensureAuthenticated(req, res, next);
+        await ensureAuthenticated(req, res, next);
 
         expect(verify).toHaveBeenCalledWith('token-valido', 'segredo');
-        expect(req.user).toEqual({});
+        expect(db.user.findById).toHaveBeenCalledWith('user-123');
+        expect(req.user).toEqual({ sub: 'user-123' });
         expect(next).toHaveBeenCalledTimes(1);
         expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it('deve retornar 401 quando o usuário não existe no banco', async () => {
+        const req = { headers: { authorization: 'Bearer token-valido' } } as Request;
+        const res = mockResponse();
+        const next = mockNext();
+        (verify as jest.Mock).mockReturnValue({ sub: 'user-inexistente' });
+        (db.user.findById as jest.Mock).mockResolvedValue(null);
+
+        await ensureAuthenticated(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            error: { message: 'Não autorizado!' },
+            body: null,
+        });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('deve retornar 401 quando o payload não é um objeto', async () => {
+        const req = { headers: { authorization: 'Bearer token-valido' } } as Request;
+        const res = mockResponse();
+        const next = mockNext();
+        (verify as jest.Mock).mockReturnValue('apenas-string');
+
+        await ensureAuthenticated(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            error: { message: 'Token inválido!' },
+            body: null,
+        });
+        expect(next).not.toHaveBeenCalled();
     });
 });

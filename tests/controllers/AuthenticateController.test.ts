@@ -2,15 +2,10 @@ import { Request, Response } from 'express';
 import { AuthenticateController } from '../../src/app/controllers/AuthenticateController';
 
 const signUpExecute = jest.fn();
-const verifyEmailExecute = jest.fn();
 const signInExecute = jest.fn();
 
 jest.mock('../../src/app/useCases/signUpUseCase', () => ({
     SignUpUseCase: jest.fn().mockImplementation(() => ({ execute: signUpExecute })),
-}));
-
-jest.mock('../../src/app/useCases/verifyEmailUseCase', () => ({
-    VerifyEmailUseCase: jest.fn().mockImplementation(() => ({ execute: verifyEmailExecute })),
 }));
 
 jest.mock('../../src/app/useCases/signInUseCase', () => ({
@@ -18,7 +13,6 @@ jest.mock('../../src/app/useCases/signInUseCase', () => ({
 }));
 
 import { SignUpUseCase } from '../../src/app/useCases/signUpUseCase';
-import { VerifyEmailUseCase } from '../../src/app/useCases/verifyEmailUseCase';
 import { SignInUseCase } from '../../src/app/useCases/signInUseCase';
 
 describe('AuthenticateController', () => {
@@ -55,6 +49,13 @@ describe('AuthenticateController', () => {
             const res = mockResponse();
 
             await expect(controller.signUp(req, res)).rejects.toThrow('A senha deve ter no mínimo 6 caracteres!');
+        });
+
+        it('deve lançar erro quando a senha tem mais de 72 caracteres', async () => {
+            const req = { body: { email: 'a@b.com', password: 'x'.repeat(73), name: 'João', sexo: 'M' } } as Request;
+            const res = mockResponse();
+
+            await expect(controller.signUp(req, res)).rejects.toThrow('A senha deve ter no máximo 72 caracteres!');
         });
 
         it('deve lançar erro quando nome não informado', async () => {
@@ -95,28 +96,6 @@ describe('AuthenticateController', () => {
                     data: { message: 'Cadastro realizado com sucesso!' },
                 },
             });
-        });
-    });
-
-    describe('verifyEmail', () => {
-        it('deve lançar erro quando email não informado', async () => {
-            const req = { query: {} } as unknown as Request;
-            const res = mockResponse();
-
-            await expect(controller.verifyEmail(req, res)).rejects.toThrow('É necessário informar o email!');
-        });
-
-        it('deve retornar 200 com o resultado da verificação', async () => {
-            verifyEmailExecute.mockResolvedValue({ some: 'result' });
-            const req = { query: { email: 'a@b.com' } } as unknown as Request;
-            const res = mockResponse();
-
-            await controller.verifyEmail(req, res);
-
-            expect(VerifyEmailUseCase).toHaveBeenCalledTimes(1);
-            expect(verifyEmailExecute).toHaveBeenCalledWith({ email: 'a@b.com' });
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ some: 'result' });
         });
     });
 

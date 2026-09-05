@@ -8,7 +8,7 @@ export default async function initialRoles(): Promise<void> {
         return;
     }
 
-    await Role.create({ name: "authenticated" });
-    await Role.create({ name: "admin" });
+    await Role.create({ name: db.ROLES.AUTHENTICATED });
+    await Role.create({ name: db.ROLES.ADMIN });
     console.log("added 'authenticated' and 'admin' to roles collection");
 }

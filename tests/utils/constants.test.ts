@@ -6,6 +6,8 @@ describe('Constant', () => {
         expect(Constant.SUCCESS).toBe(200);
         expect(Constant.GENERIC_ERROR).toBe(500);
         expect(Constant.UNAUTHORIZED).toBe(401);
+        expect(Constant.CONFLICT).toBe(409);
+        expect(Constant.FORBIDDEN).toBe(403);
     });
 
     it('deve expor valores numéricos', () => {

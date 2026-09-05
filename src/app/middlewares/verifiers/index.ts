@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import db from "../../../database/models";
+import normalizeEmail from "../../../utils/normalizeEmail";
 import { AppError } from "../../../utils/error";
 import Constant from "../../../utils/constants";
 
@@ -13,19 +14,15 @@ class Verifier {
          throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
       }
 
+      const normalizedEmail = normalizeEmail(email);
+
       try {
          const user = await User.findOne({
-            email: email
+            email: normalizedEmail
          }).exec();
 
          if (user) {
-            return res.status(Constant.SUCCESS).json({
-               error: null,
-               body: {
-                  success: false,
-                  message: "Este email já está sendo utilizado!"
-               }
-            })
+            return next(new AppError("Este email já está sendo utilizado!", Constant.CONFLICT));
          }
 
          return next();
