@@ -3,6 +3,7 @@ import { SignUpUseCase } from "../../useCases/signUpUseCase";
 import { SignInUseCase } from '../../useCases/signInUseCase';
 import Constant from '../../../utils/constants';
 import { AppError } from "../../../utils/error";
+import isValidEmail from '../../../utils/isValidEmail';
 
 class AuthenticateController {
     async signUp(request: Request, response: Response) {
@@ -11,6 +12,7 @@ class AuthenticateController {
 
         //Validar required
         if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+        if (typeof email !== 'string' || !isValidEmail(email)) throw new AppError("Email inválido!", Constant.BAD_REQUEST);
         if (typeof password !== 'string' || !password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
         if (typeof password !== 'string' || password.length < 6) throw new AppError("A senha deve ter no mínimo 6 caracteres!", Constant.BAD_REQUEST);
         if (typeof password !== 'string' || password.length > 72) throw new AppError("A senha deve ter no máximo 72 caracteres!", Constant.BAD_REQUEST);
@@ -39,6 +41,7 @@ class AuthenticateController {
         const { email, password } = request.body;
 
         if (typeof email !== 'string' || !email) throw new AppError("É necessário informar o email!", Constant.BAD_REQUEST);
+        if (typeof email !== 'string' || !isValidEmail(email)) throw new AppError("Email inválido!", Constant.BAD_REQUEST);
         if (typeof password !== 'string' || !password) throw new AppError("É necessário informar a senha!", Constant.BAD_REQUEST);
 
         const signInUseCase = new SignInUseCase();
