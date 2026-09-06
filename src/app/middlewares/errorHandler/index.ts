@@ -12,7 +12,10 @@ const errorHandler: ErrorRequestHandler = (error, request, response, next) => {
         });
     }
 
-    console.error('Erro não tratado:', error);
+    console.error(
+        'Erro não tratado:',
+        error instanceof Error ? `${error.message}\n${error.stack}` : error
+    );
 
     return response.status(500).send({
         error: { 

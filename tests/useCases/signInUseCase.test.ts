@@ -88,6 +88,7 @@ describe('SignInUseCase', () => {
         });
         expect(sign).toHaveBeenCalledWith({ sub: 'user-123' }, 'segredo-secreto', {
             expiresIn: 7200,
+            algorithm: 'HS256',
         });
     });
 });

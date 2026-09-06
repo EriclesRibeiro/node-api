@@ -1,5 +1,5 @@
 process.env.MONGO_URI = 'mongodb://localhost:27017/test';
-process.env.SECRET = 'segredo-de-teste';
+process.env.SECRET = 'segredo-de-teste-com-pelo-menos-32-caracteres';
 process.env.PORT = '3000';
 process.env.LOCAL_PORT = '';
 
@@ -8,7 +8,7 @@ const { validateEnvironment } = require('../../src/utils/validateEnvironment');
 describe('validateEnvironment', () => {
     beforeEach(() => {
         process.env.MONGO_URI = 'mongodb://localhost:27017/test';
-        process.env.SECRET = 'segredo-de-teste';
+        process.env.SECRET = 'segredo-de-teste-com-pelo-menos-32-caracteres';
         process.env.PORT = '3000';
         process.env.LOCAL_PORT = '';
     });
@@ -24,6 +24,11 @@ describe('validateEnvironment', () => {
 
     it('lança quando SECRET está ausente', () => {
         process.env.SECRET = '';
+        expect(() => validateEnvironment()).toThrow(/SECRET/);
+    });
+
+    it('lança quando SECRET possui menos de 32 caracteres', () => {
+        process.env.SECRET = 'chave-curta';
         expect(() => validateEnvironment()).toThrow(/SECRET/);
     });
 

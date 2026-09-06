@@ -1,5 +1,6 @@
 import db from "../../models";
 import dateFormatted from "../../../utils/dateFormatted";
+import normalizeEmail from "../../../utils/normalizeEmail";
 import { hash } from "bcrypt";
 
 export default async function initialUser(): Promise<void> {
@@ -13,8 +14,10 @@ export default async function initialUser(): Promise<void> {
         throw new Error("ADMIN_EMAIL e ADMIN_PASSWORD devem ser definidos para popular o usuário administrador!");
     }
 
+    const normalizedAdminEmail = normalizeEmail(adminEmail);
+
     const existing = await User.findOne({
-        email: adminEmail
+        email: normalizedAdminEmail
     });
 
     if (existing) {
@@ -29,7 +32,7 @@ export default async function initialUser(): Promise<void> {
         created_at: currentDate,
         updated_at: currentDate,
         password: await hash(adminPassword, 12),
-        email: adminEmail,
+        email: normalizedAdminEmail,
         roles: []
     });
 

@@ -39,7 +39,10 @@ describe('errorHandler', () => {
             error: { message: 'Algo deu errado! Por favor, tente novamente mais tarde!' },
             body: null,
         });
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Erro não tratado:', error);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+            'Erro não tratado:',
+            expect.stringContaining('Erro inesperado')
+        );
         consoleErrorSpy.mockRestore();
     });
 });

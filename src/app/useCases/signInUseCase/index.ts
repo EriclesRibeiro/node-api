@@ -20,7 +20,7 @@ class SignInUseCase {
             email: email
         });
 
-        const DUMMY_HASH = '$2b$10$T4VNLMlbUMn.L0ZjToK0oOao8FVVmPMNuzIEFJxrrvTHmVB5GPIxq';
+        const DUMMY_HASH = '$2b$12$wMdKDcKAk81FANw.0fFL0en04LNs0JCCIdOvLQycgrJwpwVUDgn7y';
 
         if (!user) {
             await compare(password, DUMMY_HASH);
@@ -42,7 +42,8 @@ class SignInUseCase {
 
         const secret: string = process.env.SECRET as string;
         const token = sign({ sub: user._id }, secret, {
-            expiresIn: 7200 //2h
+            expiresIn: 7200, //2h
+            algorithm: 'HS256'
         });
         return {
             error: null,
