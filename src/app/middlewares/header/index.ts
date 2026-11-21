@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import indexRoute from '../../routes';
 import { errorHandler } from '../errorHandler';
@@ -30,9 +30,27 @@ const corsOptions: cors.CorsOptions = {
     credentials: true
 };
 
+function securityHeaders(_request: Request, response: Response, next: NextFunction): void {
+    response.setHeader('X-Content-Type-Options', 'nosniff');
+    response.setHeader('X-Frame-Options', 'DENY');
+    response.setHeader('Referrer-Policy', 'no-referrer');
+    response.setHeader('X-DNS-Prefetch-Control', 'off');
+    response.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    next();
+}
+
 export default function appMiddleware(app: Express): void {
+    const trustProxy = process.env.TRUST_PROXY;
+
+    if (trustProxy) {
+        // Permite que o rate limiter e o CORS identificarem o IP de origem real
+        // quando a API está atrás de um proxy reverso (ex.: "1", "loopback").
+        app.set('trust proxy', trustProxy.trim());
+    }
+
     app.use(cors(corsOptions));
-    app.use(express.json());
+    app.use(securityHeaders);
+    app.use(express.json({ limit: '100kb' }));
     app.use(indexRoute);
 
     // Padronização de erros

@@ -36,9 +36,9 @@ export async function ensureAuthenticated(request: Request, response: Response, 
     const secret = process.env.SECRET as string;
 
     try {
-        const payload = verify(token, secret);
+        const payload = verify(token, secret, { algorithms: ['HS256'] });
 
-        if (typeof payload === 'string') {
+        if (typeof payload === 'string' || typeof payload.sub !== 'string') {
             return response.status(401).json({
                 error: {
                     message: "Token inválido!"

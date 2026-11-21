@@ -91,7 +91,7 @@ describe('ensureAuthenticated', () => {
 
         await ensureAuthenticated(req, res, next);
 
-        expect(verify).toHaveBeenCalledWith('token-valido', 'segredo');
+        expect(verify).toHaveBeenCalledWith('token-valido', 'segredo', { algorithms: ['HS256'] });
         expect(db.user.findById).toHaveBeenCalledWith('user-123');
         expect(req.user).toEqual({ sub: 'user-123' });
         expect(next).toHaveBeenCalledTimes(1);
@@ -128,6 +128,23 @@ describe('ensureAuthenticated', () => {
             error: { message: 'Token inválido!' },
             body: null,
         });
+        expect(next).not.toHaveBeenCalled();
+    });
+
+    it('deve retornar 401 quando o sub não é uma string', async () => {
+        const req = { headers: { authorization: 'Bearer token-valido' } } as Request;
+        const res = mockResponse();
+        const next = mockNext();
+        (verify as jest.Mock).mockReturnValue({ sub: 123 });
+
+        await ensureAuthenticated(req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            error: { message: 'Token inválido!' },
+            body: null,
+        });
+        expect(db.user.findById).not.toHaveBeenCalled();
         expect(next).not.toHaveBeenCalled();
     });
 });

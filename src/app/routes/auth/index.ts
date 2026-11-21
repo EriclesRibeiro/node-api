@@ -8,6 +8,12 @@ const router = Router();
 const authenticateController = new AuthenticateController();
 const verifier = new Verifier();
 
+// Respostas de autenticação contêm token/cookies sensíveis: não armazenar em cache.
+router.use((_request, response, next) => {
+    response.setHeader('Cache-Control', 'no-store');
+    next();
+});
+
 router.post("/signup", authLimiter, verifier.verifyEmail, authenticateController.signUp);
 router.post("/signin", authLimiter, authenticateController.signIn);
 router.get("/me", ensureAuthenticated, authenticateController.me);

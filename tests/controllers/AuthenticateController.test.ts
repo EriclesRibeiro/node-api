@@ -37,6 +37,14 @@ describe('AuthenticateController', () => {
             await expect(controller.signUp(req, res)).rejects.toThrow('É necessário informar o email!');
         });
 
+        it('deve lançar erro quando email é inválido', async () => {
+            const req = { body: { email: 'email-invalido', password: '123456', name: 'João', sexo: 'M' } } as Request;
+            const res = mockResponse();
+
+            await expect(controller.signUp(req, res)).rejects.toThrow('Email inválido!');
+            expect(signUpExecute).not.toHaveBeenCalled();
+        });
+
         it('deve lançar erro quando senha não informada', async () => {
             const req = { body: { email: 'a@b.com', name: 'João', sexo: 'M' } } as Request;
             const res = mockResponse();
@@ -105,6 +113,14 @@ describe('AuthenticateController', () => {
             const res = mockResponse();
 
             await expect(controller.signIn(req, res)).rejects.toThrow('É necessário informar o email!');
+        });
+
+        it('deve lançar erro quando email é inválido', async () => {
+            const req = { body: { email: 'email-invalido', password: '123' } } as Request;
+            const res = mockResponse();
+
+            await expect(controller.signIn(req, res)).rejects.toThrow('Email inválido!');
+            expect(signInExecute).not.toHaveBeenCalled();
         });
 
         it('deve lançar erro quando senha não informada', async () => {
